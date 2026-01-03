@@ -50,15 +50,31 @@ def identify():
                     break
         
         if best_match:
-            rec_id = best_match['recordings'][0]['id']
-            title = best_match['recordings'][0]['title']
+            recording = best_match['recordings'][0]
+            rec_id = recording['id']
+            title = recording['title']
+            artist = recording['artists'][0]['name'] if 'artists' in recording else "Bilinmiyor"
             
-            # MusicBrainz detay sorgusu (İstersen ekle)
+            # Albüm ve Release ID bulmaya çalış
+            album_name = None
+            release_id = None
+            if 'releases' in best_match:
+                # En yüksek skorlu veya ilk release'i al
+                release = best_match['releases'][0]
+                album_name = release.get('title')
+                release_id = release.get('id')
+            elif 'releases' in recording:
+                 release = recording['releases'][0]
+                 album_name = release.get('title')
+                 release_id = release.get('id')
+
             return jsonify({
                 "success": True,
                 "mbid": rec_id,
+                "release_id": release_id,
                 "title": title,
-                "artist": best_match['recordings'][0]['artists'][0]['name'] if 'artists' in best_match['recordings'][0] else "Bilinmiyor"
+                "artist": artist,
+                "album": album_name
             })
         else:
             return jsonify({"success": False, "message": "Eşleşme bulunamadı"}), 404
