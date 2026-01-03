@@ -39,15 +39,12 @@ def identify():
                 os.chmod(fpcalc_path, 0o755)
 
         duration, fingerprint = acoustid.fingerprint_file(temp_path)
-        print(f"DEBUG: Duration: {duration}, Fingerprint Length: {len(fingerprint)}")
 
         results = acoustid.lookup(API_KEY, fingerprint, duration, meta=['recordings', 'releases'])
-        print(f"DEBUG: AcoustID Results: {results}")
         
         best_match = None
         if 'results' in results:
             for result in results['results']:
-                print(f"DEBUG: Found match with score: {result['score']}")
                 if result['score'] > 0.4:
                     best_match = result
                     break
