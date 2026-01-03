@@ -7,7 +7,7 @@ import tempfile
 app = Flask(__name__)
 
 # AYARLAR
-API_KEY = 'T5f0Zrf0Lu' # Senin Keyin
+API_KEY = '3OoK8s537Q' # Yeni ve geçerli API Anahtarı
 musicbrainzngs.set_useragent("MyMusicApp", "0.1", "student@gazi.edu.tr")
 
 @app.route('/', methods=['GET'])
