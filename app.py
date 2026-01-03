@@ -28,8 +28,11 @@ def identify():
 
     try:
         # 1. Parmak izi ve API Sorgusu
-        # Not: Render'da fpcalc'ı sisteme kurdurtacağız.
+        # Render (Linux) üzerinde 'fpcalc' komutu direkt sistemden çağrılmalı
+        # Eğer yerel test yapıyorsan fpcalc_path belirtmelisin, 
+        # ama Render'da apt-get ile kurduğumuz için gerek kalmayacak.
         duration, fingerprint = acoustid.fingerprint_file(temp_path)
+
         results = acoustid.lookup(API_KEY, fingerprint, duration, meta=['recordings', 'releases'])
         
         best_match = None
