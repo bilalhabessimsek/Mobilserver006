@@ -1,0 +1,4 @@
+flask
+pyacoustid
+musicbrainzngs
+gunicorn
