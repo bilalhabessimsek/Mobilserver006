@@ -57,7 +57,12 @@ def identify():
             recording = recordings[0]
             rec_id = recording.get('id')
             title = recording.get('title', "Bilinmeyen Başlık")
-            artist = recording.get('artists', [{}])[0].get('name', "Bilinmiyor") if 'artists' in recording else "Bilinmiyor"
+            
+            # Artist safe access
+            artists = recording.get('artists', [])
+            artist = "Bilinmiyor"
+            if artists and len(artists) > 0:
+                artist = artists[0].get('name', "Bilinmiyor")
             
             album_name = None
             release_id = None
