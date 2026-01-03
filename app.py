@@ -50,34 +50,39 @@ def identify():
                     break
         
         if best_match:
-            recording = best_match['recordings'][0]
-            rec_id = recording['id']
-            title = recording['title']
-            artist = recording['artists'][0]['name'] if 'artists' in recording else "Bilinmiyor"
+            recordings = best_match.get('recordings', [])
+            if not recordings:
+                 return jsonify({"success": False, "message": "Kayıt detayı bulunamadı"}), 404
+            
+            recording = recordings[0]
+            rec_id = recording.get('id')
+            title = recording.get('title', "Bilinmeyen Başlık")
+            artist = recording.get('artists', [{}])[0].get('name', "Bilinmiyor") if 'artists' in recording else "Bilinmiyor"
             
             album_name = None
             release_id = None
 
             # 1. Aşama: AcoustID içinden Release ID çekmeye çalış
-            if 'releases' in best_match:
-                release = best_match['releases'][0]
-                album_name = release.get('title')
-                release_id = release.get('id')
+            releases = best_match.get('releases', [])
+            if releases:
+                album_name = releases[0].get('title')
+                release_id = releases[0].get('id')
             elif 'releases' in recording:
-                release = recording['releases'][0]
-                album_name = release.get('title')
-                release_id = release.get('id')
+                rec_releases = recording.get('releases', [])
+                if rec_releases:
+                    album_name = rec_releases[0].get('title')
+                    release_id = rec_releases[0].get('id')
 
             # 2. Aşama: Eğer hala yoksa, MusicBrainz'e derinlemesine sor
-            if not release_id:
+            if not release_id and rec_id:
                 try:
                     mb_res = musicbrainzngs.get_recording_by_id(rec_id, includes=["releases"])
-                    if 'recording' in mb_res and 'release-list' in mb_res['recording']:
-                        releases = mb_res['recording']['release-list']
-                        if releases:
-                            # En popüler/ilk albümü al
-                            album_name = releases[0].get('title')
-                            release_id = releases[0].get('id')
+                    if 'recording' in mb_res:
+                        mb_rec = mb_res['recording']
+                        if 'release-list' in mb_rec and mb_rec['release-list']:
+                            first_release = mb_rec['release-list'][0]
+                            album_name = first_release.get('title')
+                            release_id = first_release.get('id')
                 except Exception as mb_err:
                     print(f"B planı (MB Lookup) başarısız: {mb_err}")
 
