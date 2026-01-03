@@ -55,18 +55,31 @@ def identify():
             title = recording['title']
             artist = recording['artists'][0]['name'] if 'artists' in recording else "Bilinmiyor"
             
-            # Albüm ve Release ID bulmaya çalış
             album_name = None
             release_id = None
+
+            # 1. Aşama: AcoustID içinden Release ID çekmeye çalış
             if 'releases' in best_match:
-                # En yüksek skorlu veya ilk release'i al
                 release = best_match['releases'][0]
                 album_name = release.get('title')
                 release_id = release.get('id')
             elif 'releases' in recording:
-                 release = recording['releases'][0]
-                 album_name = release.get('title')
-                 release_id = release.get('id')
+                release = recording['releases'][0]
+                album_name = release.get('title')
+                release_id = release.get('id')
+
+            # 2. Aşama: Eğer hala yoksa, MusicBrainz'e derinlemesine sor
+            if not release_id:
+                try:
+                    mb_res = musicbrainzngs.get_recording_by_id(rec_id, includes=["releases"])
+                    if 'recording' in mb_res and 'release-list' in mb_res['recording']:
+                        releases = mb_res['recording']['release-list']
+                        if releases:
+                            # En popüler/ilk albümü al
+                            album_name = releases[0].get('title')
+                            release_id = releases[0].get('id')
+                except Exception as mb_err:
+                    print(f"B planı (MB Lookup) başarısız: {mb_err}")
 
             return jsonify({
                 "success": True,
